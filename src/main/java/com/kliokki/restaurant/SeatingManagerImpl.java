@@ -26,7 +26,6 @@ public class SeatingManagerImpl implements SeatingManager {
         for(Table table : tables) {
             if (table.size() > maxSize) {
                 maxSize = table.size();
-                break;
             }
         }
         return maxSize;
