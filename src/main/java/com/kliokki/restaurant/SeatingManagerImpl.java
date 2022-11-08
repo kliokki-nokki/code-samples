@@ -10,7 +10,7 @@ public class SeatingManagerImpl implements SeatingManager {
 
     private final static ReentrantLock queueProcessorLock = new ReentrantLock();
     private final int maxTableSize;
-    private final Queue<CustomerGroup> waitingGroups = new LinkedList<>();
+    private final Queue<CustomerGroup> waitingGroups = new ConcurrentLinkedQueue<>();
     private final Map<CustomerGroup, Table> servingGroups = new ConcurrentHashMap<>();
     private final Map<Table, Collection<CustomerGroup>> tablesWithGuests = new HashMap<>();
     private final Map<Integer, Queue<Table>> tablesFreeSeats = new HashMap<>();
