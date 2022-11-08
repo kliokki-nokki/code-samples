@@ -2,6 +2,7 @@ package com.kliokki.restaurant;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
@@ -11,8 +12,8 @@ public class SeatingManagerImpl implements SeatingManager {
     private final int maxTableSize;
     private final Queue<CustomerGroup> waitingGroups = new LinkedList<>();
     private final Map<CustomerGroup, Table> servingGroups = new ConcurrentHashMap<>();
-    private final Map<Table, List<CustomerGroup>> tablesWithGuests = new ConcurrentHashMap<>();
-    private final Map<Integer, Queue<Table>> tablesFreeSeats = new ConcurrentHashMap<>();
+    private final Map<Table, Collection<CustomerGroup>> tablesWithGuests = new HashMap<>();
+    private final Map<Integer, Queue<Table>> tablesFreeSeats = new HashMap<>();
 
     public SeatingManagerImpl(List<Table> tables) {
         maxTableSize = getMaxTableSize(tables);
@@ -32,11 +33,11 @@ public class SeatingManagerImpl implements SeatingManager {
     }
 
     private void populateTablesWithGuests(List<Table> tables) {
-        tables.forEach(t -> tablesWithGuests.put(t, new LinkedList<>()));
+        tables.forEach(t -> tablesWithGuests.put(t, new ConcurrentLinkedQueue<>()));
     }
 
     private void populateTableFreeSeats(List<Table> tables) {
-        IntStream.range(0, maxTableSize + 1).forEach(i -> tablesFreeSeats.put(i, new LinkedList<>()));
+        IntStream.range(0, maxTableSize + 1).forEach(i -> tablesFreeSeats.put(i, new ConcurrentLinkedQueue<>()));
         tables.forEach(t -> tablesFreeSeats.get(t.size()).offer(t));
     }
 
@@ -68,7 +69,7 @@ public class SeatingManagerImpl implements SeatingManager {
     }
 
     private boolean clearTable(Table table, CustomerGroup leavingGroup) {
-        List<CustomerGroup> tableGroups = tablesWithGuests.get(table); // O(1)
+        Collection<CustomerGroup> tableGroups = tablesWithGuests.get(table); // O(1)
         if (tableGroups != null) {
             tableGroups.remove(leavingGroup); // O(n) but list is very short
         }
